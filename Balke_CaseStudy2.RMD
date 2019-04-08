@@ -1,0 +1,30 @@
+---
+title: "EBalke_CaseStudy2"
+author: "Eric Balke"
+date: "April 8th, 2019"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r CaseStudy2}
+library(fpp)
+library(fpp2)
+library(dygraphs)
+library(xts)
+library(dplyr)
+library(tidyr)
+library(stringi)
+library(rvest)
+library(ggplot2)
+
+# Import data
+CS2URL <- paste0("https://raw.githubusercontent.com/","BivinSadler/MSDS-6306-Doing-Data-Science/","master/UNIT%2014/CaseStudy2-data.csv")
+CS2Data <- read.csv(CS2URL,stringsAsFactors = F)
+str(CS2Data)
+head(CS2Data)
+
+
+```
