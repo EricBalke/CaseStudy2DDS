@@ -19,6 +19,9 @@ library(tidyr)
 library(stringi)
 library(rvest)
 library(ggplot2)
+library(GGally)
+library(Cairo)
+
 
 # Import data
 CS2URL <- paste0("https://raw.githubusercontent.com/","BivinSadler/MSDS-6306-Doing-Data-Science/","master/UNIT%2014/CaseStudy2-data.csv")
@@ -26,9 +29,14 @@ CS2Data <- read.csv(CS2URL,stringsAsFactors = F)
 str(CS2Data)
 head(CS2Data)
 
+#Explore linear relationship of response and explanatory variables
+ggpairs(data=CS2Data, columns=c("Attrition","Age","Gender","Education","MaritalStatus", "DistanceFromHome"), title="Attrition to Demographics")
 
+ggpairs(data=CS2Data, columns=c("Attrition","DailyRate","HourlyRate","MonthlyRate","MonthlyIncome"), title="Attrition to Earnings")
 
+ggpairs(data=CS2Data, columns=c("Attrition","BusinessTravel","Department","JobRole","OverTime","JobLevel"), title="Attrition to Employment Characteristics")
 
+ggpairs(data=CS2Data, columns=c("Attrition","EnvironmentSatisfaction","JobSatisfaction","PerformanceRating","RelationshipSatisfaction"), title="Attrition to Satisfaction and Performance Ratings")
 
 
 
