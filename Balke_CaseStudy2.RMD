@@ -386,7 +386,7 @@ get_best_result(lmCVFit)
 lmCVFit$finalModel
 
 varImp(lmCVFit)
-ggplot(varImp(lmCVFit))
+ggplot(varImp(lmCVFit)) + ggtitle(wrapper("Most Important Features related to Salary from 10-fold Cross Validated Linear Regression (based on absolute value of each parameters t-statistic)", width = 60))
 
 
 # Try random forest regression with Grid tuning
@@ -398,7 +398,7 @@ rf1$finalModel
 ggplot(rf1) + theme_bw() + ggtitle(wrapper("Random Forest Regression on 4 selected input variables with Grid Search for finding optimal hyperparameters in caret::train method=rf", width = 60))
 
 # Try random forest regression with Grid tuning on all input vars
-tg2 <- data.frame(mtry = seq(5,21, by =2))
+tg2 <- data.frame(mtry = seq(17,33, by =2))
 rf2 <- caret::train(log(MonthlyIncome)~., data = caret_train, method = "rf", tuneGrid = tg2)
 summary(rf2)
 get_best_result(rf2)
