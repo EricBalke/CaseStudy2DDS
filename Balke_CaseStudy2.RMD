@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r CaseStudy2}
+```{r CaseStudy2_Attrition}
 library(fpp)
 library(fpp2)
 library(dygraphs)
@@ -21,6 +21,14 @@ library(rvest)
 library(ggplot2)
 library(GGally)
 library(Cairo)
+library(caret)
+library(mlr)
+library(dummies)
+library(klaR)
+library(scales)
+library(MASS)
+library(randomForest)
+library(readxl)
 
 
 # Import data
@@ -29,25 +37,413 @@ CS2Data <- read.csv(CS2URL,stringsAsFactors = F)
 str(CS2Data)
 head(CS2Data)
 
+
+summary(CS2Data)
+
 #Explore linear relationship of response and explanatory variables
-ggpairs(data=CS2Data, columns=c("Attrition","Age","Gender","Education","MaritalStatus", "DistanceFromHome"), title="Attrition to Demographics")
+#################
+# Attrition EDA #
+#################
+ggpairs(data=CS2Data, columns=c("Attrition","Age","Gender"), title="Attrition to Demographics 1")
 
-ggpairs(data=CS2Data, columns=c("Attrition","DailyRate","HourlyRate","MonthlyRate","MonthlyIncome"), title="Attrition to Earnings")
+ggpairs(data=CS2Data, columns=c("Attrition","MaritalStatus", "DistanceFromHome"), title="Attrition to Demographics 2")
 
-ggpairs(data=CS2Data, columns=c("Attrition","BusinessTravel","Department","JobRole","OverTime","JobLevel"), title="Attrition to Employment Characteristics")
+ggpairs(data=CS2Data, columns=c("Attrition","Education", "EducationField"), title="Attrition to Demographics 3")
 
-ggpairs(data=CS2Data, columns=c("Attrition","EnvironmentSatisfaction","JobSatisfaction","PerformanceRating","RelationshipSatisfaction"), title="Attrition to Satisfaction and Performance Ratings")
+ggpairs(data=CS2Data, columns=c("Attrition","MonthlyRate","MonthlyIncome"), title="Attrition to Earnings")
+
+ggpairs(data=CS2Data, columns=c("Attrition","JobLevel","Department","JobRole"), title="Attrition to Employment Characteristics 1")
+
+ggpairs(data=CS2Data, columns=c("Attrition","OverTime","BusinessTravel"), title="Attrition to Employment Characteristics 2")
+
+ggpairs(data=CS2Data, columns=c("Attrition","StandardHours","WorkLifeBalance","YearsAtCompany"), title="Attrition to Employment Characteristics 3")
+
+ggpairs(data=CS2Data, columns=c("Attrition","YearsInCurrentRole","YearsWithCurrManager"), title="Attrition to Employment Characteristics 4")
+
+ggpairs(data=CS2Data, columns=c("Attrition","YearsSinceLastPromotion"), title="Attrition to Employment Characteristics 5")
+
+ggpairs(data=CS2Data, columns=c("Attrition","EnvironmentSatisfaction","RelationshipSatisfaction"), title="Attrition to Satisfaction and Performance Ratings 1")
+
+ggpairs(data=CS2Data, columns=c("Attrition","JobSatisfaction","PerformanceRating"), title="Attrition to Satisfaction and Performance Ratings 2")
+
+######################
+# Monthly Income EDA #
+######################
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","Age","Gender"), title="MonthlyIncome to Demographics 1")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","MaritalStatus", "DistanceFromHome"), title="MonthlyIncome to Demographics 2")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","Education", "EducationField"), title="MonthlyIncome to Demographics 3")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","MonthlyRate","StockOptionLevel"), title="MonthlyIncome to Earnings")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","JobLevel","Department","JobRole"), title="MonthlyIncome to Employment Characteristics 1")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","OverTime","BusinessTravel"), title="MonthlyIncome to Employment Characteristics 2")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","YearsAtCompany","YearsInCurrentRole"), title="MonthlyIncome to Employment Characteristics 3")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","YearsWithCurrManager","YearsSinceLastPromotion"), title="MonthlyIncome to Employment Characteristics 4")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","EnvironmentSatisfaction","RelationshipSatisfaction"), title="MonthlyIncome to Satisfaction and Performance Ratings 1")
+
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","JobSatisfaction","PerformanceRating"), title="MonthlyIncome to Satisfaction and Performance Ratings 2")
 
 
+# visualize the variables used in the first pass knn models
+# Job Satisfaction Vizzes
+ggplot(CS2Data, aes(x = JobSatisfaction, fill = Attrition)) +
+        geom_histogram(binwidth = 0.5) +
+        facet_grid(Attrition ~ .)
+
+ggplot(CS2Data, aes(x = JobSatisfaction, fill = Attrition)) +
+  geom_histogram(aes(y=c(..count..[..group..==1]/sum(..count..[..group..==1]),
+                         ..count..[..group..==2]/sum(..count..[..group..==2]))*100),
+                 position='dodge', binwidth=0.5) +
+  ylab("Percentage") + xlab("Job Satisfaction")
+
+# PerformanceRating Vizzes
+ggplot(CS2Data, aes(x = PerformanceRating, fill = Attrition)) +
+        geom_histogram(binwidth = 0.5) +
+        facet_grid(Attrition ~ .)
+
+ggplot(CS2Data, aes(x = PerformanceRating, fill = Attrition)) +
+  geom_histogram(aes(y=c(..count..[..group..==1]/sum(..count..[..group..==1]),
+                         ..count..[..group..==2]/sum(..count..[..group..==2]))*100),
+                 position='dodge', binwidth=0.5) +
+  ylab("Percentage") + xlab("Performance Rating")
+
+# JobLevel Vizzes
+ggplot(CS2Data, aes(x = JobLevel, fill = Attrition)) +
+        geom_histogram(binwidth = 0.5) +
+        facet_grid(Attrition ~ .)
+
+ggplot(CS2Data, aes(x = JobLevel, fill = Attrition)) +
+  geom_histogram(aes(y=c(..count..[..group..==1]/sum(..count..[..group..==1]),
+                         ..count..[..group..==2]/sum(..count..[..group..==2]))*100),
+                 position='dodge', binwidth=0.5) +
+  ylab("Percentage") + xlab("Job Level")
+
+# Overtime Vizzes
+ggplot(CS2Data, aes(x = OverTime, fill = Attrition)) +
+        geom_bar() +
+        facet_grid(Attrition ~ .)
+
+ggplot(CS2Data, aes(x = OverTime, fill = Attrition)) +
+  geom_bar(aes(y = (..count..)/sum(..count..))) +
+  labs(x = "OverTime", y = "Percent", fill = "Attrition")
+
+# Try KNN classification 
+df1 <- CS2Data[,c("ID","OverTime")]
+df2 <- cbind(df1, dummy(df1$OverTime, sep = "OT_"))
+CS2Data2 <- cbind(CS2Data,df2)
+
+class_train <- CS2Data2[,c(2:9,12:22,24:27,29:36,40,41)]
+
+data_part <- createDataPartition(y = class_train$Attrition, p = 0.60, list = F)
+test <- class_train[-data_part,] # 40% data goes here
+train <- class_train[data_part,] # 60% data goes here
+
+ltrain <- length(train$Attrition)
+ltest <- length(test$Attrition)
+
+perc_test <- ltest / (ltest + ltrain)
+perc_train <- ltrain / (ltest + ltrain)
+perc_test
+perc_train
+
+head(train)
+head(test)
+
+summarizeColumns(train)
+summarizeColumns(test)
+
+# KNN classification using class::knn
+results3 <- class::knn(train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")],test[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], train$Attrition, k = 3)
+test$AttritionPred3 <- results3
+
+plot(results3, main="Classification of Attrition for class::knn k=3",xlab="Attrition")
+
+confusionMatrix(table(test$Attrition, test$AttritionPred3))
+
+results5 <- class::knn(train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")],test[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], train$Attrition, k = 5)
+test$AttritionPred5 <- results5
+
+plot(results5, main="Classification of Attrition for class::knn k=5",xlab="Attrition")
+
+confusionMatrix(table(test$Attrition, test$AttritionPred5))
 
 
+# KNN classification using class::knn.cv
+results_3_cv <- class::knn.cv(class_train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], class_train$Attrition, k = 3)
+class_train$AttritionPred_3_cv <- results_3_cv
+
+plot(results_3_cv, main="Classification of Attrition for class::knn.cv k=3",xlab="Attrition")
+
+confusionMatrix(table(class_train$Attrition, class_train$AttritionPred_3_cv))
+
+results_5_cv <- class::knn.cv(class_train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], class_train$Attrition, k = 5)
+class_train$AttritionPred_5_cv <- results_5_cv
+
+plot(results_5_cv, main="Classification of Attrition for class::knn.cv k=5",xlab="Attrition")
+
+confusionMatrix(table(class_train$Attrition, class_train$AttritionPred_5_cv))
+
+# KNN classification using caret::train(method = "knn") on all input vars and
+# Use Caret package to try to optimize the k parameter
+caret_train <- CS2Data[,c(2:9,12:22,24:27,29:36)]
+# change strings to factors
+caret_train$Attrition <- as.factor(caret_train$Attrition)
+caret_train$BusinessTravel <- as.factor(caret_train$BusinessTravel)
+caret_train$Department <- as.factor(caret_train$Department)
+caret_train$EducationField <- as.factor(caret_train$EducationField)
+caret_train$Gender <- as.factor(caret_train$Gender)
+caret_train$JobRole <- as.factor(caret_train$JobRole)
+caret_train$MaritalStatus <- as.factor(caret_train$MaritalStatus)
+caret_train$OverTime <- as.factor(caret_train$OverTime)
+caret_train$JobLevel <- as.factor(caret_train$JobLevel)
+caret_train$Education <- as.factor(caret_train$Education)
+caret_train$EnvironmentSatisfaction <- as.factor(caret_train$EnvironmentSatisfaction)
+caret_train$JobInvolvement <- as.factor(caret_train$JobInvolvement)
+caret_train$JobSatisfaction <- as.factor(caret_train$JobSatisfaction)
+caret_train$PerformanceRating <- as.factor(caret_train$PerformanceRating)
+caret_train$RelationshipSatisfaction <- as.factor(caret_train$RelationshipSatisfaction)
+caret_train$StockOptionLevel <- as.factor(caret_train$StockOptionLevel)
+caret_train$WorkLifeBalance <- as.factor(caret_train$WorkLifeBalance)
+
+# separate source and subsequent table so subsequent table can get predictors as the program progresses, and future models won't have predicted variables as input
+caret_train_pred <- caret_train
+
+trctrl <- trainControl(method = "repeatedcv", number = 10, repeats = 3)
+set.seed(3333)
+knn_fit_caret <- caret::train(Attrition ~., data = caret_train, method = "knn",
+ trControl=trctrl,
+ preProcess = c("center", "scale"),
+  tuneGrid = expand.grid(k = seq(1, 51, by = 1)))
+knn_fit_caret
+ggplot(knn_fit_caret) + theme_bw() + ggtitle("K-Nearest Neighbors with caret::train method=knn")
+
+# Utility functions to (1) get best model and (2) wrap ggplot titles because they are too long
+get_best_result = function(caret_fit) {
+  best = which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))
+  best_result = caret_fit$results[best, ]
+  rownames(best_result) = NULL
+  best_result
+}
+
+wrapper <- function(x, ...) 
+{
+  paste(strwrap(x, ...), collapse = "\n")
+}
 
 
-# Import Attrition Testing Data
+get_best_result(knn_fit_caret)
+
+knn_fit_caret$finalModel
+
+caret_train_pred$AttritionPred_Caret_KNN <- predict(knn_fit_caret)
+
+confusionMatrix(table(caret_train_pred$Attrition, caret_train_pred$AttritionPred_Caret_KNN))
+
+# Stochastic Gradient Boosting using caret::train(method = "gbm") on all input vars
+getModelInfo()$gbm$parameters
+
+fitControl <- trainControl(## 10-fold CV
+                           method = "repeatedcv",
+                           number = 10,
+                           ## repeated ten times
+                           repeats = 10)
+set.seed(825)
+gbmFit1 <- caret::train(Attrition ~., data = caret_train, 
+                 method = "gbm", 
+                 trControl = fitControl,
+                 ## This last option is actually one
+                 ## for gbm() that passes through
+                 verbose = FALSE)
+gbmFit1
+
+ggplot(gbmFit1) + theme_bw() + ggtitle(wrapper("Stochastic Gradient Boosting with caret::train method=gbm", width = 60))
+
+get_best_result(gbmFit1)
+
+gbmFit1$finalModel
+
+caret_train_pred$AttritionPred_Caret_GBM <- predict(gbmFit1)
+
+confusionMatrix(table(caret_train_pred$Attrition, caret_train_pred$AttritionPred_Caret_GBM))
+
+# Stochastic Gradient Boosting using caret::train(method = "gbm") on all input vars and impute missing predicting vars with preprocessing
+fitControlmi <- trainControl(## 10-fold CV
+                           method = "repeatedcv",
+                           number = 10,
+                           ## repeated ten times
+                           repeats = 10)
+set.seed(825)
+gbmFitmi <- caret::train(Attrition ~., data = caret_train, 
+                 method = "gbm", 
+                 trControl = fitControlmi,
+                 preProcess = c("knnImpute"),
+                 ## This last option is actually one
+                 ## for gbm() that passes through
+                 verbose = FALSE)
+gbmFitmi
+
+ggplot(gbmFitmi) + theme_bw() + ggtitle(wrapper("Stochastic Gradient Boosting with Missing Values Imputed with KNN in caret::train method=gbm", width = 60))
+
+get_best_result(gbmFitmi)
+
+gbmFitmi$finalModel
+
+caret_train_pred$AttritionPred_Caret_GBM_MI <- predict(gbmFitmi)
+
+confusionMatrix(table(caret_train_pred$Attrition, caret_train_pred$AttritionPred_Caret_GBM_MI))
+
+# Create a tuning grid to optimize the hyperparameters and create a better model
+gbmGrid <-  expand.grid(interaction.depth = c(1,2,3), 
+                        n.trees = (1:20)*50, 
+                        shrinkage = 0.05,
+                        n.minobsinnode = c(5,10,15))
+                        
+nrow(gbmGrid)
+
+set.seed(825)
+gbmFitGrid <- caret::train(Attrition ~., data = caret_train,  
+                 method = "gbm", 
+                 trControl = fitControl, 
+                 verbose = FALSE, 
+                 ## Now specify the exact models 
+                 ## to evaluate:
+                 tuneGrid = gbmGrid)
+gbmFitGrid
+
+ggplot(gbmFitGrid) + theme_bw() + ggtitle(wrapper("Stochastic Gradient Boosting with Grid Search for finding optimal hyperparameters in caret::train method=gbm", width = 60))
+
+get_best_result(gbmFitGrid)
+
+gbmFitGrid$finalModel
+
+caret_train_pred$AttritionPred_Caret_GBM_Grid <- predict(gbmFitGrid)
+
+confusionMatrix(table(caret_train_pred$Attrition,caret_train_pred$AttritionPred_Caret_GBM_Grid))
+
+
+# Import Attrition Testing Data, and apply the best model from above to predict 
+# attrition for Case Study 2 Attrition prediction competition
 AttritionTestURL <- paste0("https://raw.githubusercontent.com/","BivinSadler/MSDS-6306-Doing-Data-Science/","master/UNIT%2014/CaseStudy2Validation%20No%20Attrition.csv")
 AttritionTest <- read.csv(AttritionTestURL,stringsAsFactors = F)
 str(AttritionTest)
 head(AttritionTest)
 
+# limit to the same columns in the training data set
+AttritionTest2 <- AttritionTest[,c(2:8,11:21,23:26,28:35)]
+
+# Predict the 300 unknown observations from the Attrition Validation data using the best model from above based on accuracy, sensitiviy and specificity
+generalize_best_model <- predict(gbmFitGrid, newdata = AttritionTest2)
+head(generalize_best_model)
+
+# Export results to CSV file
+ID <- AttritionTest[,c("ID")]
+#df2 <- cbind(df1, dummy(df1$OverTime, sep = "OT_"))
+gen_best_mod_df <- cbind(ID,as.data.frame(generalize_best_model))
+write.csv(gen_best_mod_df, file = "Case2PredictionsBalke Attrition.csv",row.names=FALSE)
+
+```
+
+```{r CaseStudy2_Salary}
+
+# Create test and training data sets
+split<-createDataPartition(y = caret_train$MonthlyIncome, p = 0.6, list = FALSE)
+train_reg <-caret_train[split,]
+test_reg <-caret_train[-split,]
+
+# Simple linear regression on the training set to find out which variables are significant
+lmFit <- caret::train(log(MonthlyIncome)~., data = train_reg, method = "lm")
+summary(lmFit)
+get_best_result(lmFit)
+residuals<-resid(lmFit)
+predictedValues<-predict(lmFit, train_reg)
+plot(log(train_reg$MonthlyIncome),residuals)
+abline(0,0)
+plot(log(train_reg$MonthlyIncome),predictedValues)
+
+modelvalues_train <-data.frame(obs = log(train_reg$MonthlyIncome), pred=predictedValues)
+defaultSummary(modelvalues_train)
+
+predValues <- predict(lmFit, test_reg)
+modelvalues_test <-data.frame(obs = log(test_reg$MonthlyIncome), pred=predValues)
+defaultSummary(modelvalues_test)
+
+# Cross validated linear regression 
+caret_train_reg <- caret_train[,c("MonthlyIncome","BusinessTravel","JobLevel","JobRole","TotalWorkingYears")]
+cctrl1 <- trainControl(method = "cv", number = 10)
+set.seed(849)
+lmCVFit <- caret::train(log(MonthlyIncome) ~ ., data = caret_train_reg, 
+                            method = "lm", 
+                            trControl = cctrl1,
+                            metric = "Rsquared")
+summary(lmCVFit)
+get_best_result(lmCVFit)
+lmCVFit$finalModel
+
+varImp(lmCVFit)
+ggplot(varImp(lmCVFit))
+
+
+# Try random forest regression with Grid tuning
+tg1 <- data.frame(mtry = seq(1,4, by =1))
+rf1 <- caret::train(log(MonthlyIncome)~., data = caret_train_reg, method = "rf", tuneGrid = tg1)
+summary(rf1)
+get_best_result(rf1)
+rf1$finalModel
+ggplot(rf1) + theme_bw() + ggtitle(wrapper("Random Forest Regression on 4 selected input variables with Grid Search for finding optimal hyperparameters in caret::train method=rf", width = 60))
+
+# Try random forest regression with Grid tuning on all input vars
+tg2 <- data.frame(mtry = seq(5,21, by =2))
+rf2 <- caret::train(log(MonthlyIncome)~., data = caret_train, method = "rf", tuneGrid = tg2)
+summary(rf2)
+get_best_result(rf2)
+rf2$finalModel
+ggplot(rf2) + theme_bw() + ggtitle(wrapper("Random Forest Regression on all input variables with Grid Search for finding optimal hyperparameters in caret::train method=rf", width = 60))
+
+# Try stepwise regression with AIC on all variable dataset
+tr <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+step_lm <- caret::train(log(MonthlyIncome) ~ ., data = caret_train, 
+                    method = "lmStepAIC", trControl = tr, trace = FALSE)
+summary(step_lm)
+get_best_result(step_lm)
+step_lm$finalModel
+
+# Compare regression models
+lmFit$results
+lmCVFit$results
+rf1$results
+rf2$results
+step_lm$results
+
+
+# Import Salary Testing Data, and apply the best model from above to predict 
+# salary for Case Study 2 Salary prediction competition
+# NOTE: if step_lm or rf2 above is best I'll have to change the SalaryTest2 columns to correspond to what's on caret_train
+SalaryTest <- read_excel("CaseStudy2Validation No Salary.xlsx")
+str(SalaryTest)
+head(SalaryTest)
+
+# limit to the same columns in the training data set
+#SalaryTest2 <- SalaryTest[,c(2:9,12:21,23:26,28:35)]
+#this is if one of the models above is the best that was trained on caret_train_reg
+SalaryTest2 <- SalaryTest[,c("BusinessTravel","JobLevel","JobRole","TotalWorkingYears")]
+SalaryTest2$BusinessTravel <- as.factor(SalaryTest2$BusinessTravel)
+SalaryTest2$JobLevel <- as.factor(SalaryTest2$JobLevel)
+SalaryTest2$JobRole <- as.factor(SalaryTest2$JobRole)
+
+# Predict the 300 unknown observations from the Salary Validation data using the best model from above based on lowest RMSE
+generalize_best_model_reg <- predict(rf1, newdata = SalaryTest2)
+head(generalize_best_model_reg)
+
+ID_salary <- SalaryTest[,c("ID")]
+gen_best_mod_df_reg <- cbind(ID_salary,as.data.frame(generalize_best_model_reg))
+gen_best_mod_df_reg$PredSalary <- exp(gen_best_mod_df_reg$generalize_best_model_reg)
+gen_best_mod_df_reg1<- gen_best_mod_df_reg[,c(1,3)]
+write.csv(gen_best_mod_df_reg1, file = "Case2PredictionsBalke Salary.csv",row.names=FALSE)
 
 ```
