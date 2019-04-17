@@ -336,6 +336,15 @@ head(AttritionTest)
 
 # limit to the same columns in the training data set
 AttritionTest2 <- AttritionTest[,c(2:8,11:21,23:26,28:35)]
+AttritionTest2$Education <- as.factor(AttritionTest2$Education)
+AttritionTest2$EnvironmentSatisfaction <- as.factor(AttritionTest2$EnvironmentSatisfaction)
+AttritionTest2$JobInvolvement <- as.factor(AttritionTest2$JobInvolvement)
+AttritionTest2$JobLevel <- as.factor(AttritionTest2$JobLevel)
+AttritionTest2$JobSatisfaction <- as.factor(AttritionTest2$JobSatisfaction)
+AttritionTest2$PerformanceRating <- as.factor(AttritionTest2$PerformanceRating)
+AttritionTest2$RelationshipSatisfaction <- as.factor(AttritionTest2$RelationshipSatisfaction)
+AttritionTest2$StockOptionLevel <- as.factor(AttritionTest2$StockOptionLevel)
+AttritionTest2$WorkLifeBalance <- as.factor(AttritionTest2$WorkLifeBalance)
 
 # Predict the 300 unknown observations from the Attrition Validation data using the best model from above based on accuracy, sensitiviy and specificity
 generalize_best_model <- predict(gbmFitGrid, newdata = AttritionTest2)
