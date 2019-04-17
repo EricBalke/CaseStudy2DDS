@@ -32,6 +32,12 @@ library(readxl)
 
 getwd()
 
+# utility function to wrap long ggplot titles
+wrapper <- function(x, ...) 
+{
+  paste(strwrap(x, ...), collapse = "\n")
+}
+
 # Import data
 CS2URL <- paste0("https://raw.githubusercontent.com/","BivinSadler/MSDS-6306-Doing-Data-Science/","master/UNIT%2014/CaseStudy2-data.csv")
 CS2Data <- read.csv(CS2URL,stringsAsFactors = F)
@@ -78,7 +84,7 @@ ggpairs(data=CS2Data, columns=c("MonthlyIncome","Education", "EducationField"), 
 
 ggpairs(data=CS2Data, columns=c("MonthlyIncome","MonthlyRate","StockOptionLevel"), title="MonthlyIncome to Earnings")
 
-ggpairs(data=CS2Data, columns=c("MonthlyIncome","JobLevel","Department","JobRole"), title="MonthlyIncome to Employment Characteristics 1")
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","JobLevel","YearsInCurrentCompany","JobRole"), title="MonthlyIncome to Employment Characteristics 1")
 
 ggpairs(data=CS2Data, columns=c("MonthlyIncome","OverTime","BusinessTravel"), title="MonthlyIncome to Employment Characteristics 2")
 
@@ -92,6 +98,10 @@ ggpairs(data=CS2Data, columns=c("MonthlyIncome","JobSatisfaction","PerformanceRa
 
 
 # visualize the variables used in the first pass knn models
+# Monthly Income to Attrition Vizzes
+ggplot(CS2Data, aes(x = MonthlyIncome, fill = Attrition)) + geom_histogram() +
+        ggtitle(wrapper("Distribution of Monthly Income by Attrition Category", width = 60))
+
 # Job Satisfaction Vizzes
 ggplot(CS2Data, aes(x = JobSatisfaction, fill = Attrition)) +
         geom_histogram(binwidth = 0.5) +
@@ -132,7 +142,8 @@ ggplot(CS2Data, aes(x = OverTime, fill = Attrition)) +
 
 ggplot(CS2Data, aes(x = OverTime, fill = Attrition)) +
   geom_bar(aes(y = (..count..)/sum(..count..))) +
-  labs(x = "OverTime", y = "Percent", fill = "Attrition")
+  labs(x = "OverTime", y = "Percent", fill = "Attrition") +
+  ggtitle(wrapper("Percent of employees working overtime by Attrition Category", width = 60))
 
 # Try KNN classification 
 df1 <- CS2Data[,c("ID","OverTime")]
@@ -160,35 +171,35 @@ summarizeColumns(train)
 summarizeColumns(test)
 
 # KNN classification using class::knn
-results3 <- class::knn(train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")],test[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], train$Attrition, k = 3)
-test$AttritionPred3 <- results3
+#results3 <- class::knn(train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")],test[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], train$Attrition, k = 3)
+#test$AttritionPred3 <- results3
 
-plot(results3, main="Classification of Attrition for class::knn k=3",xlab="Attrition")
+#plot(results3, main="Classification of Attrition for class::knn k=3",xlab="Attrition")
 
-confusionMatrix(table(test$Attrition, test$AttritionPred3))
+#confusionMatrix(table(test$Attrition, test$AttritionPred3))
 
-results5 <- class::knn(train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")],test[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], train$Attrition, k = 5)
-test$AttritionPred5 <- results5
+#results5 <- class::knn(train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")],test[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], train$Attrition, k = 5)
+#test$AttritionPred5 <- results5
 
-plot(results5, main="Classification of Attrition for class::knn k=5",xlab="Attrition")
+#plot(results5, main="Classification of Attrition for class::knn k=5",xlab="Attrition")
 
-confusionMatrix(table(test$Attrition, test$AttritionPred5))
+#confusionMatrix(table(test$Attrition, test$AttritionPred5))
 
 
 # KNN classification using class::knn.cv
-results_3_cv <- class::knn.cv(class_train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], class_train$Attrition, k = 3)
-class_train$AttritionPred_3_cv <- results_3_cv
+#results_3_cv <- class::knn.cv(class_train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], class_train$Attrition, k = 3)
+#class_train$AttritionPred_3_cv <- results_3_cv
 
-plot(results_3_cv, main="Classification of Attrition for class::knn.cv k=3",xlab="Attrition")
+#plot(results_3_cv, main="Classification of Attrition for class::knn.cv k=3",xlab="Attrition")
 
-confusionMatrix(table(class_train$Attrition, class_train$AttritionPred_3_cv))
+#confusionMatrix(table(class_train$Attrition, class_train$AttritionPred_3_cv))
 
-results_5_cv <- class::knn.cv(class_train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], class_train$Attrition, k = 5)
-class_train$AttritionPred_5_cv <- results_5_cv
+#results_5_cv <- class::knn.cv(class_train[,c("JobSatisfaction","PerformanceRating","JobLevel","df1OT_Yes","df1OT_No")], class_train$Attrition, k = 5)
+#class_train$AttritionPred_5_cv <- results_5_cv
 
-plot(results_5_cv, main="Classification of Attrition for class::knn.cv k=5",xlab="Attrition")
+#plot(results_5_cv, main="Classification of Attrition for class::knn.cv k=5",xlab="Attrition")
 
-confusionMatrix(table(class_train$Attrition, class_train$AttritionPred_5_cv))
+#confusionMatrix(table(class_train$Attrition, class_train$AttritionPred_5_cv))
 
 # KNN classification using caret::train(method = "knn") on all input vars and
 # Use Caret package to try to optimize the k parameter
@@ -224,7 +235,7 @@ knn_fit_caret <- caret::train(Attrition ~., data = caret_train, method = "knn",
 knn_fit_caret
 ggplot(knn_fit_caret) + theme_bw() + ggtitle("K-Nearest Neighbors with caret::train method=knn")
 
-# Utility functions to (1) get best model and (2) wrap ggplot titles because they are too long
+# Utility function to get best model 
 get_best_result = function(caret_fit) {
   best = which(rownames(caret_fit$results) == rownames(caret_fit$bestTune))
   best_result = caret_fit$results[best, ]
@@ -232,11 +243,7 @@ get_best_result = function(caret_fit) {
   best_result
 }
 
-wrapper <- function(x, ...) 
-{
-  paste(strwrap(x, ...), collapse = "\n")
-}
-
+ggplot(varImp(knn_fit_caret)) + ggtitle(wrapper("Most Important Features related to Attrition from 10-fold Cross Validated KNN Regression", width = 60))
 
 get_best_result(knn_fit_caret)
 
