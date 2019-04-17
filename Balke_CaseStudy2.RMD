@@ -5,11 +5,11 @@ date: "April  16th, 2019"
 output: html_document
 ---
   
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r CaseStudy2_Attrition}
+```{r CaseStudy2_Attrition, cache=FALSE}
 library(fpp)
 library(fpp2)
 library(dygraphs)
@@ -30,6 +30,7 @@ library(MASS)
 library(randomForest)
 library(readxl)
 
+getwd()
 
 # Import data
 CS2URL <- paste0("https://raw.githubusercontent.com/","BivinSadler/MSDS-6306-Doing-Data-Science/","master/UNIT%2014/CaseStudy2-data.csv")
@@ -358,7 +359,7 @@ write.csv(gen_best_mod_df, file = "Case2PredictionsBalke Attrition.csv",row.name
 
 ```
 
-```{r CaseStudy2_Salary}
+```{r CaseStudy2_Salary, cache=FALSE}
 
 # Create test and training data sets
 split<-createDataPartition(y = caret_train$MonthlyIncome, p = 0.6, list = FALSE)
