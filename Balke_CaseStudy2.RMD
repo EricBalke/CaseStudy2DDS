@@ -395,7 +395,7 @@ get_best_result(lmCVFit)
 lmCVFit$finalModel
 
 varImp(lmCVFit)
-ggplot(varImp(lmCVFit)) + ggtitle(wrapper("Most Important Features related to Salary from 10-fold Cross Validated Linear Regression (based on absolute value of each parameters t-statistic)", width = 60))
+ggplot(varImp(lmCVFit)) + ggtitle(wrapper("Most Important Features related to Salary from 10-fold Cross Validated Linear Regression", width = 60))
 
 
 # Try random forest regression with Grid tuning
