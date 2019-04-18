@@ -4,7 +4,7 @@ author: "Eric Balke"
 date: "April  16th, 2019"
 output: html_document
 ---
-  
+
 ```{r setup, include=FALSE, cache=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -57,7 +57,7 @@ ggpairs(data=CS2Data, columns=c("Attrition","MaritalStatus", "DistanceFromHome")
 
 ggpairs(data=CS2Data, columns=c("Attrition","Education", "EducationField"), title="Attrition to Demographics 3")
 
-ggpairs(data=CS2Data, columns=c("Attrition","MonthlyRate","MonthlyIncome"), title="Attrition to Earnings")
+ggpairs(data=CS2Data, columns= c("Attrition", "MonthlyRate", "MonthlyIncome"), title="Attrition to Earnings")
 
 ggpairs(data=CS2Data, columns=c("Attrition","JobLevel","Department","JobRole"), title="Attrition to Employment Characteristics 1")
 
@@ -84,11 +84,11 @@ ggpairs(data=CS2Data, columns=c("MonthlyIncome","Education", "EducationField"), 
 
 ggpairs(data=CS2Data, columns=c("MonthlyIncome","MonthlyRate","StockOptionLevel"), title="MonthlyIncome to Earnings")
 
-ggpairs(data=CS2Data, columns=c("MonthlyIncome","JobLevel","YearsInCurrentCompany","JobRole"), title="MonthlyIncome to Employment Characteristics 1")
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","JobLevel","Department","JobRole"), title="MonthlyIncome to Employment Characteristics 1")
 
 ggpairs(data=CS2Data, columns=c("MonthlyIncome","OverTime","BusinessTravel"), title="MonthlyIncome to Employment Characteristics 2")
 
-ggpairs(data=CS2Data, columns=c("MonthlyIncome","YearsAtCompany","YearsInCurrentRole"), title="MonthlyIncome to Employment Characteristics 3")
+ggpairs(data=CS2Data, columns=c("MonthlyIncome","YearsAtCompany","TotalWorkingYears"), title="MonthlyIncome to Employment Characteristics 3")
 
 ggpairs(data=CS2Data, columns=c("MonthlyIncome","YearsWithCurrManager","YearsSinceLastPromotion"), title="MonthlyIncome to Employment Characteristics 4")
 
